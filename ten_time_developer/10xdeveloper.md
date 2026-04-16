@@ -5,7 +5,7 @@
 
 ## AI Leverage
 
-AI 是这个时代的杠杆, 可以让开发者翘起10 倍以上的杠杆。
+AI 是这个时代的杠杆,开发者借助AI撬动10 倍以上的杠杆。
 
 ![img](./image/Leverage.png)
 

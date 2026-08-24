@@ -4,7 +4,7 @@
 
 本文从蒙古军十人队、Brooks的外科手术团队和传统CPU TOP验证团队出发，讨论LLM与Coding Agent普及后，CPU TOP验证团队应如何组织。
 
-三类组织产生于不同环境，不能用来证明“10人是最佳人数”，但它们共享几条原则：
+这三种组织形式背景不同，10人也并非普遍适用的最佳规模，但它们体现了几项共同的组织原则：
 
 - 核心技术决策需要明确责任人。
 - 大系统应拆成可独立闭环的小型责任单元。
@@ -12,9 +12,9 @@
 - 稀缺专家和平台能力在更高层共享。
 - 扩大规模应依靠分层和接口，而不是扩大扁平团队。
 
-AI改变的是执行能力，不是最终责任。AI时代更合适的组织形态是：
+AI改变的是执行能力，不是最终责任。AI时代更合适的组织形态，是由稳定的人类责任层与弹性的Agent执行层协同工作：
 
-> 稳定的人类责任层负责规格、微架构不变量、Reference Model、风险和sign-off；弹性的Agent执行层负责搜索、编码、测试、回归、triage和文档。
+> 人类负责规格解释与裁决、微架构约束、风险评估及最终签核；Agent负责代码检索与生成、测试开发、回归执行、失败分类和文档整理。
 
 本文的“CPU TOP团队”指单个高性能CPU Core集成层的专职验证团队，不包含全部微架构Block DV、Cluster/SoC验证、Physical Design、DFT、编译器和软件团队。
 
@@ -80,8 +80,6 @@ Brooks描述的团队，重点角色可映射如下：
 
 核心并非“一个英雄带若干助手”，而是由一名主刀保持概念完整性，一名副手提供全局挑战和备份，其他专业角色放大核心产出。
 
-对CPU验证的直接启示是：DV Lead必须能够裁决验证架构、规格歧义和waiver，并对总体环境、reference和sign-off逻辑保持最终判断力。
-
 ---
 
 ## 3. 传统CPU TOP验证团队
@@ -98,15 +96,15 @@ CPU TOP通常负责：
 - Debug、Trace、PMU、RAS、power、reset、boot
 - Random instruction methodology、shared environment、reference、coverage、regression、sign-off
 
-在Block DV基本完整、公共环境可用的前提下，8～10人经常成为经验上的核心规模：人数再少容易缺少专业覆盖和备份；扁平团队明显扩大后，公共环境冲突、重复建设、责任模糊和review成本会迅速增加。
+在Block DV和公共环境基本就绪的前提下，CPU TOP核心团队通常为8～10人：人数过少难以覆盖关键领域并形成备份，人数过多则会增加协作冲突、重复建设和评审成本。
 
-### 3.2 微架构Block
+### 3.2 微架构小组
 
-微架构Block是围绕一个微架构责任域建立的小型跨职能团队，对uArch定义、RTL、Block DV和TOP集成交付端到端负责。它不是按RTL文件划分的临时项目组。
+微架构小组是围绕一个微架构责任域建立的小型跨职能团队，对uArch定义、RTL、Block DV和TOP集成交付端到端负责。
 
-建议按照真实状态耦合关系划分，而不是简单按照RTL文件划分：
+业界通常根据功能边界和状态耦合关系划分微架构小组：
 
-| 微架构小队 | 主要范围 |
+| 微架构小组 | 主要范围 |
 | --- | --- |
 | Frontend | Fetch、BTB、Branch Prediction、I-Cache |
 | Decode/Rename/Dispatch | RAT、ROB Allocation、Resource Check、Dispatch |
@@ -116,7 +114,7 @@ CPU TOP通常负责：
 | Cache/Coherence | L1/L2、Snoop、Coherence Interface |
 | Cross-cutting | Debug、RAS、Security、Low Power、Performance Events |
 
-每个Block至少需要一名RTL Owner和一名独立DV Owner。
+每个微架构小组至少需要一名RTL Owner和一名独立DV Owner。
 
 ### 3.3 传统团队的核心角色
 
@@ -185,7 +183,7 @@ Definition of Done
 
 当多个Agent并行生成代码和测试时，主要风险不是代码风格差异，而是规格理解、验证假设和签核标准发生偏移。为保证验证环境的一致性，每个Agent任务都应明确权威规格及版本、目标配置、架构与微架构不变量、允许修改范围、Reference Model与Checker以及验收标准。Domain Owner负责本领域Verification Intent和任务边界，DV Lead负责跨领域规则、规格冲突与sign-off标准的统一裁决。Agent可以并行执行，验证责任和最终判断仍由Human Owner承担。
 
-### 4.3 AI能力成熟度
+### 4.3 AI能力分级
 
 | 等级 | 能力 | 组织影响 |
 | --- | --- | --- |
@@ -193,8 +191,6 @@ Definition of Done
 | L2 Workflow | 自动编译、回归、triage和报告 | 减少重复平台劳动 |
 | L3 Closed Loop | 在确定性gate内自动修复和重跑 | 减少部分执行工作 |
 | L4 Governed Multi-Agent | 多Agent分工、独立检查、审计和成本控制 | 改变团队并行方式 |
-
-只有L3/L4在真实项目中持续证明质量后，才适合调整组织规模和岗位结构。
 
 ### 4.4 AI最容易替代的工作
 
@@ -332,22 +328,20 @@ CPU TOP团队负责检查跨Block不变量、构造跨域场景、路由TOP fail
 | 资源与治理 | 仿真、Formal、许可证、Token和存储是否受控；IP、权限、网络和审计是否合规 |
 | 人才梯队 | 初级人员能否通过Feature ownership、debug和review成长为未来Owner |
 
-小团队能否精而强，也取决于外围系统。CPU TOP核心团队必须得到微架构Block、Formal、Emulation、架构、性能和EDA平台的明确支持，否则小团队只会变成小规模救火队。
+小团队能否精而强，也取决于外围系统。CPU TOP核心团队必须得到微架构Block、Formal、Emulation、架构、性能和EDA平台的明确支持。
 
 ---
 
 ## 8. 结论
 
-蒙古十人队强调分层指挥和基层责任，Brooks强调概念完整性，传统CPU TOP团队强调专业覆盖与协作带宽。AI时代延续这些原则，只是把执行能力扩展为弹性Agent层。
+蒙古十人队强调分层指挥和基层责任，Brooks强调概念完整性，传统CPU TOP团队强调专业覆盖与协作带宽。这些原则在AI时代仍然适用，而Agent提供了可按需扩展的执行能力。因此，合理的CPU TOP组织应当：
 
-合理的CPU TOP组织应当：
+- 由Lead负责总体策略与sign-off，并承担最终责任。
+- 由Domain Owner对架构、微架构、ISA和System Feature端到端负责。
+- 通过明确的Block-to-TOP交付规范，衔接RTL设计、Block DV与CPU TOP集成验证。
+- 让Agent承担Co-pilot式全局review、Platform和高吞吐执行。
 
-- 由Lead保持总体策略、Reference Model和sign-off的一致性，Co-pilot Agent辅助全局review。
-- 由Domain Owner对架构、Memory、OOO和System Feature端到端负责。
-- 通过微架构Block接口连接Block设计与验证。
-- 让Agent承担Co-pilot、Platform和高吞吐执行，但不承担最终责任。
-
-真正应该减少的是重复劳动、无效等待和信息搬运，而不是独立判断、微架构理解、验证责任和人才梯队。
+AI应减少重复劳动、无效等待和信息搬运，同时保留人类的独立判断、微架构理解与验证责任，并持续建设人才梯队。
 
 ---
 
